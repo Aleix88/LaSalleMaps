@@ -1,3 +1,7 @@
+import Model.City;
+import Utils.JSONReader;
+
+import java.util.List;
 import java.util.Scanner;
 
 public class Menu {
@@ -41,6 +45,7 @@ public class Menu {
 
     private void importarMapa () {
         System.out.println("Mapa");
+        List<City> cityList = new JSONReader().parseSchools();
     }
 
     private void buscarCiutat () {
