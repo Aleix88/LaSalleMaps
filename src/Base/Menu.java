@@ -1,6 +1,7 @@
 package Base;
 
 
+import Model.City;
 import Utils.DijkstraAlgorithm;
 import Utils.JSONReader;
 import Modelv2.CityInfo;
@@ -71,15 +72,21 @@ public class Menu {
         }
     }
 
-    private void importarMapa() {
-        try {
-            JSONReader jsonReader = new JSONReader();
-            String filename = jsonReader.getFilename();
-            Base.DataManager.getInstance().addCitiesJSON(jsonReader.parsecities(filename));
-            Base.DataManager.getInstance().addConectionsJSON(jsonReader.parseConnections(filename));
-            mapImported = true;
-        } catch (FileNotFoundException e) {
-            System.err.println("No s'ha pogut trobar el fitxer. Siusplau, comprovi si el fitxer/camí especificat es correcte");
+    private void importarMapa(){
+        if(mapImported){
+            System.out.println("El mapa ja s'ha importat");
+        }else {
+            try {
+                JSONReader jsonReader = new JSONReader();
+                String filename = jsonReader.getFilename();
+                long pastTime = System.nanoTime();
+                Base.DataManager.getInstance().addCitiesJSON(jsonReader.parsecities(filename));
+                Base.DataManager.getInstance().addConectionsJSON(jsonReader.parseConnections(filename));
+                System.out.println("Temps total de importació: " + ((System.nanoTime()-pastTime)/1000000) + " ms");
+                mapImported = true;
+            } catch (FileNotFoundException e) {
+                System.err.println("No s'ha pogut trobar el fitxer. Siusplau, comprovi si el fitxer/camí especificat es correcte");
+            }
         }
     }
 
@@ -87,18 +94,18 @@ public class Menu {
         try {
             int opcio = 0;
             do { //entre 1 i 4
-                System.out.println(System.lineSeparator()+"1. Sense optimització (Cerca binària): ");
+                System.out.println(System.lineSeparator() + "1. Sense optimització (Cerca binària): ");
                 System.out.println("2. Sense optimització (Cerca lineal): ");
                 System.out.println("3. Cerca utilitzant arbre AVL: ");
                 System.out.println("4. Cerca utilitzant taula de hash amb adrecament tancat: ");
                 System.out.print("Opcio: ");
                 opcio = Integer.parseInt(sc.nextLine());
-                if((opcio < 1 || opcio > 4)){
-                    System.out.println(System.lineSeparator()+"Aquesta opció no existeix" + System.lineSeparator());
+                if ((opcio < 1 || opcio > 4)) {
+                    System.out.println(System.lineSeparator() + "Aquesta opció no existeix" + System.lineSeparator());
                 }
             } while ((opcio < 1 || opcio > 4));
             System.out.print("Nom ciutat: ");
-            CityInfo o = Base.DataManager.getInstance().searchCityInfo(sc.nextLine(), opcio-1);
+            CityInfo o = Base.DataManager.getInstance().searchCityInfo(sc.nextLine(), opcio - 1,1);
             if (o == null) {
                 //Nothing
             } else {
@@ -110,21 +117,37 @@ public class Menu {
     }
 
     private void calcularRuta() {
-        int opcio;
-        do{
+        int typeSearch = 0;
+        try {
+            do { //entre 1 i 4
+                System.out.println(System.lineSeparator() + "1. Sense optimització (Cerca binària): ");
+                System.out.println("2. Sense optimització (Cerca lineal): ");
+                System.out.println("3. Cerca utilitzant arbre AVL: ");
+                System.out.println("4. Cerca utilitzant taula de hash amb adrecament tancat: ");
+                System.out.print("Opcio: ");
+                typeSearch = Integer.parseInt(sc.nextLine());
+                if ((typeSearch < 1 || typeSearch > 4)) {
+                    System.out.println(System.lineSeparator() + "Aquesta opció no existeix" + System.lineSeparator());
+                }
+            } while ((typeSearch < 1 || typeSearch > 4));
+        } catch (NumberFormatException nfe) {
+            System.err.println("L'input introduit no te un format correcte");
+        }
+        int opcio = 0;
+        do {
             System.out.println("1.Shorter route");
             System.out.println("2.Fastest route");
             System.out.print("Opció: ");
             opcio = Integer.parseInt(sc.nextLine());
-            if((opcio < 1 || opcio > 2)){
-                System.out.println(System.lineSeparator()+"Aquesta opció no existeix" + System.lineSeparator());
+            if ((opcio < 1 || opcio > 2)) {
+                System.out.println(System.lineSeparator() + "Aquesta opció no existeix" + System.lineSeparator());
             }
-        }while(opcio < 1 || opcio > 2);
+        } while (opcio < 1 || opcio > 2);
         System.out.print("Nom ciutat origen: ");
         String originCity = sc.nextLine();
         System.out.print("Nom ciutat destí: ");
         String destCity = sc.nextLine();
-        DijkstraAlgorithm.getInstance().executeAlgorithm(originCity,destCity,opcio-1);
+        DijkstraAlgorithm.getInstance().executeAlgorithm(originCity, destCity, opcio - 1, typeSearch - 1);
     }
 
     private void printaOpcioIncorrecte() {
@@ -148,11 +171,14 @@ public class Menu {
         System.out.println("\tLatitud: " + c.getCity().getLatitude());
         System.out.println("\tLongitud: " + c.getCity().getLongitude());
         System.out.println(System.lineSeparator() + "\tConnections: ");
+        City destCity;
         for (int i = 0; i < c.getConnections().size(); i++) {
+            destCity = DataManager.getInstance().getCities().get(DataManager.getInstance()
+                    .getArrayPositionsConnections()[c.getArryPos()][i]).getCity();
             System.out.println("\t\tNom ciutat desti: " + c.getConnections().get(i).getTo());
-            System.out.println("\t\tCodi pais ciutat: " + c.getDestCityConnections().get(i).getCountry());
-            System.out.println("\t\tLatitud: " + c.getDestCityConnections().get(i).getLatitude());
-            System.out.println("\t\tLongitud: " + c.getDestCityConnections().get(i).getLongitude());
+            System.out.println("\t\tCodi pais ciutat: " + destCity.getCountry());
+            System.out.println("\t\tLatitud: " + destCity.getLatitude());
+            System.out.println("\t\tLongitud: " + destCity.getLongitude());
             System.out.println("\t\tTemps destinació(En format HH:mm:ss): " + formatTime(c.getConnections().get(i).getDuration()));
             System.out.println("\t\tDistancia fins a destí: " + String.valueOf((float) c.getConnections().get(i).getDistance() / (float) 1000) +
                     " km" + System.lineSeparator() + System.lineSeparator());

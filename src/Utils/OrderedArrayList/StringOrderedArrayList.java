@@ -62,7 +62,7 @@ public class StringOrderedArrayList<E> {
      */
     public E binarySearch(String s){
         i = 0;
-        j = numObjects;
+        j = numObjects - 1;
         while(i <= j){
             k = i + (j-i)/2;
             if(data[k].getOrder().equals(s)) return data(k);
@@ -74,7 +74,7 @@ public class StringOrderedArrayList<E> {
         }
         return null;
     }
-    public int binarySearchIndex(String s){
+   /* public int binarySearchIndex(String s){
         i = 0;
         j = numObjects;
         while(i <= j){
@@ -88,7 +88,7 @@ public class StringOrderedArrayList<E> {
         }
         return -1;
     }
-
+*/
     public E linealSearch(String s){
       for(i = 0; i < numObjects; i++){
           if(data[i].getOrder().equals(s)) return data(i);

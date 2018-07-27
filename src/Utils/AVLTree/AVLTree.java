@@ -58,7 +58,7 @@ public class AVLTree<E> {
         }
 
         // NodeData <= alfabeticament que node b, entres
-        if (nodeData.getOrder().toLowerCase().compareTo(node.getNodeData().getOrder().toLowerCase()) <= 0) { //<= es per si els strings fossin iguals, pero no hauria de ser
+        if (nodeData.getOrder().compareTo(node.getNodeData().getOrder()) <= 0) { //<= es per si els strings fossin iguals, pero no hauria de ser
             node.setLeftchild(insertar(node.getLeftchild(), nodeData));
         } else {
             /* No posarem mai duplicats en aquesta estructura, perque abans de inserir es comprova que existeixi / es confia en que en els fitxers importats
@@ -83,17 +83,17 @@ public class AVLTree<E> {
          */
 
          // (0 - 2 < -1 (leftchild(0) - rightchild(2))) + (nou node esquerra rightchild o dreta rightchild ? --> dreta rightchild)
-        if (factorEquil < -1 && nodeData.getOrder().toLowerCase().compareTo(node.getRightchild().getNodeData().getOrder().toLowerCase()) > 0) {
+        if (factorEquil < -1 && nodeData.getOrder().compareTo(node.getRightchild().getNodeData().getOrder()) > 0) {
             return R(node); //RR
             //El contrari del cas anterior
-        }else if (factorEquil > 1 && nodeData.getOrder().toLowerCase().compareTo(node.getLeftchild().getNodeData().getOrder().toLowerCase()) <= 0) {
+        }else if (factorEquil > 1 && nodeData.getOrder().compareTo(node.getLeftchild().getNodeData().getOrder()) <= 0) {
             return L(node); //LL
             //L perque factor equilibri > 1, R perque agafant el fill esquerra es dona que el node es mès gran que aquest
-        }else if (factorEquil > 1 && nodeData.getOrder().toLowerCase().compareTo(node.getLeftchild().getNodeData().getOrder().toLowerCase()) > 0){
+        }else if (factorEquil > 1 && nodeData.getOrder().compareTo(node.getLeftchild().getNodeData().getOrder()) > 0){
             node.setLeftchild(R(node.getLeftchild())); //Primer L, utilitzant el node esquerra d'on hi ha el desbalanceig. Despres L
             return L(node); //LR
             //R perque factor equilibri <-1, L perque agafant el fill dret, node introduit < node dret
-        }else if (factorEquil < -1 && nodeData.getOrder().toLowerCase().compareTo(node.getRightchild().getNodeData().getOrder().toLowerCase()) <= 0) {
+        }else if (factorEquil < -1 && nodeData.getOrder().compareTo(node.getRightchild().getNodeData().getOrder()) <= 0) {
             node.setRightchild(L(node.getRightchild())); //Primer R, utilitzant el node dret d'on hi ha el desbalanceig. Despres R
             return R(node); //RL
         } //O un o l'altre
@@ -141,7 +141,7 @@ public class AVLTree<E> {
             //Si la s es mes petita que aux, node esquerre. Sinó, node dret.
             /*El lowercase el fa una mica mes lent, es una pena, potser el trec quan funcioni be.
             / Una mica mès lent pero es un bucle que es fa a cada iteracio..-.-....Realment el cost de O(log n) sembla que no pero s'en va a la merda*/
-            if (s.toLowerCase().compareTo(aux.getNodeData().getOrder().toLowerCase()) <= 0) {
+            if (s.compareTo(aux.getNodeData().getOrder()) <= 0) {
                 aux = aux.getLeftchild();
             } else {
                 aux = aux.getRightchild();

@@ -9,17 +9,15 @@ public class CityInfo {
 
     private City city;
     private StandardArrayList<Connection> connections;
-    private StandardArrayList<City> destCityConnections;
+    private int arryPos;
 
 
     public CityInfo(){
         connections = new StandardArrayList();
-        destCityConnections = new StandardArrayList<>();
     }
     public CityInfo(City city) {
         this.city = city;
         connections = new StandardArrayList();
-        destCityConnections = new StandardArrayList<>();
     }
 
     public City getCity() {
@@ -34,16 +32,16 @@ public class CityInfo {
         this.city = city;
     }
 
+    public int getArryPos() {
+        return arryPos;
+    }
+
+    public void setArryPos(int arryPos) {
+        this.arryPos = arryPos;
+    }
+
     public void setConnections(StandardArrayList<Connection> connections) {
         this.connections = connections;
-    }
-
-    public StandardArrayList<City> getDestCityConnections() {
-        return destCityConnections;
-    }
-
-    public void setDestCityConnections(StandardArrayList<City> destCityConnections) {
-        this.destCityConnections = destCityConnections;
     }
 
 }

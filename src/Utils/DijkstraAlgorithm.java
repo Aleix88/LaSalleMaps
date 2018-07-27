@@ -13,21 +13,19 @@ public class DijkstraAlgorithm {
 
     private static DijkstraAlgorithm instance = null;
 
-    private StandardArrayList<Boolean> T; //Nodes que queden per explorar
-    private StandardArrayList<Integer> C; //Indica, desde el node actual, el seguent tal que t'acostis al node origen
-    private StandardArrayList<Integer> D; //Conté el cost del camí per arribar a aquell node
+    private boolean[] T; //Nodes que queden per explorar
+    private int[] C; //Indica, desde el node actual, el seguent tal que t'acostis al node origen
+    private int[] D; //Conté el cost del camí per arribar a aquell node
+    private int[] DAux;
 
+    private long pastTime;
     private int indexOriginCity;
     private int indexDestCity;
     private StringOrderedArrayList<CityInfo> soal;
-
-    private int type;
+    private int typeValue;
     private int[][] arryPos; //Per saber els indexes de les connexions de les ciutats.
 
     private DijkstraAlgorithm() {
-        T = new StandardArrayList<>(); //Quan es visitin no es borraran, es posaran a -1;
-        C = new StandardArrayList<>();
-        D = new StandardArrayList<>();
     }
 
     public static DijkstraAlgorithm getInstance() {
@@ -37,122 +35,179 @@ public class DijkstraAlgorithm {
         return instance;
     }
 
-    public void executeAlgorithm(String startCity, String endCity, int type) {
-        this.type = type;
+    public void executeAlgorithm(String startCity, String endCity, int typeVal, int typeSrch) {
+        this.pastTime = System.nanoTime();
+        this.typeValue = typeVal;
         this.soal = DataManager.getInstance().getCities();
-        this.arryPos = DataManager.getInstance().getArrayPositions();
-        this.indexOriginCity = soal.binarySearchIndex(startCity);
-        this.indexDestCity = soal.binarySearchIndex(endCity);
-        if (indexOriginCity == -1) {
-            System.out.println("No s'ha trobat la ciutat origen. No s'executarà dijkstra");
-        } else if (indexDestCity == -1) {
-            System.out.println("No s'ha trobat la ciutat destí. No s'executarà dijkstra");
-        } else {
+        this.arryPos = DataManager.getInstance().getArrayPositionsConnections();
+        try {
+            this.indexOriginCity = DataManager.getInstance().searchCityInfo(startCity, typeSrch, 0).getArryPos();
+            this.indexDestCity = DataManager.getInstance().searchCityInfo(endCity, typeSrch, 0).getArryPos();
             initDijkstra();
-            execute();
+            if (typeVal == 0) {
+                executeDistance();
+            } else {
+                executeDuration();
+            }
+            System.out.println(System.lineSeparator() + "Temps execució Dijkstra: " + ((System.nanoTime() - pastTime) / 1000) + " us");
             parseResults();
+        } catch (NullPointerException npe) {
+            System.out.println("No s'ha trobat la ciutat origen/destí. No s'executarà dijkstra");
         }
 
     }
 
     private void parseResults() {
-        int distance = 0;
-        String time = null;
-        int timeAux = 0;
-        int i = indexDestCity;
-        int j;
-        StandardArrayList<Integer> cami = new StandardArrayList<>();
-
-
-        switch (type) {
-            case 0: //distance
-                distance = D.get(indexDestCity);
-                while (i != indexOriginCity) {
-                    cami.add(i);
-                    for(j = 0; j < soal.get(i).getConnections().size(); j++){
-                        if(arryPos[i][j] == C.get(i)) break;
-                    }
-                    i = C.get(i);
-                }
-                time = Menu.formatTime(timeAux);
-                break;
-            case 1: //time
-                time = Menu.formatTime(D.get(indexDestCity));
-                while (i != indexOriginCity) {
-                    cami.add(i);
-                    for(j = 0; j < soal.get(i).getConnections().size(); j++){
-                        if(arryPos[i][j] == C.get(i)) break;
-                    }
-                    distance += soal.get(i).getConnections().get(j).getDistance();
-                    i = C.get(i);
-                }
-                break;
+        if (D[indexDestCity] == Integer.MAX_VALUE) {
+            System.out.println("No s'ha pogut trobar la connexió amb el destí");
+        } else {
+            int distance = 0;
+            String time = null;
+            StringBuilder sb = new StringBuilder();
+            switch (typeValue) {
+                case 0: //distance
+                    distance = D[indexDestCity] / 1000;
+                    time = Menu.formatTime(DAux[indexDestCity]);
+                    break;
+                case 1: //time
+                    time = Menu.formatTime(D[indexDestCity]);
+                    distance = DAux[indexDestCity] / 1000;
+                    break;
+            }
+            StandardArrayList<Integer> cami = new StandardArrayList<>();
+            int i = indexDestCity;
+            while (i != indexOriginCity) {
+                cami.add(i);
+                i = C[i];
+            }
+            cami.add(i);
+            for (i = cami.size() - 1; i > 0; i--) {
+                sb.append(soal.get(cami.get(i)).getCity().getName()).append(" --> ");
+            }
+            sb.append(soal.get(cami.get(i)).getCity().getName());
+            System.out.println("Ciutat origen: " + soal.get(indexOriginCity).getCity().getName());
+            System.out.println("Cituat destí: " + soal.get(indexDestCity).getCity().getName());
+            System.out.println("Kilometres totals: " + distance + " km");
+            System.out.println("Durada total (HH:mm:ss): " + time);
+            System.out.print("Camí realitzat: ");
+            System.out.println(sb.toString() + System.lineSeparator());
         }
-        distance = distance/1000;
-        System.out.println("Ciutat origen: " + soal.get(indexOriginCity).getCity().getName());
-        System.out.println("Cituat destí: " + soal.get(indexDestCity).getCity().getName());
-        System.out.println("Kilometres totals: " + distance + " km");
-        System.out.println("Durada total (HH:mm:ss): " + time);
-        System.out.print("Camí realitzat: ");
-        StringBuilder sb = new StringBuilder();
-        sb.append(soal.get(indexOriginCity).getCity().getName()).append(" -> ");
-        for(j = cami.size() - 1; j >= 0; j--){
-            sb.append(soal.get(cami.get(j)).getCity().getName());
-            if(j != 0) sb.append(" -> ");
-        }
-        System.out.println(sb.toString() + System.lineSeparator());
     }
 
     private void execute() {
-        for (int i = 0; i < D.size() - 1; i++) { //Recorrem tots els nodes. -1 perque el primer ja esta explorat
-            int shortest = Integer.MAX_VALUE;
-            int index = 0;
+        int shortest;
+        int index;
+        for (int i = 0; i < D.length - 1; i++) { //Recorrem tots els nodes. -1 perque el primer ja esta explorat
+            shortest = Integer.MAX_VALUE;
+            index = 0;
             //Aqui podria fer un remove quan l'hagi explorat, pero un aixó es el mateix que copiar tot l'array de nou i demanar memoria, així que no em beneficia de re
-            for (int j = 0; j < T.size(); j++) {
-                if (D.get(j) < shortest && !T.get(j)) {
-                    shortest = D.get(i);
+            for (int j = 0; j < T.length; j++) {
+                if (!T[j] && D[j] < shortest) {
+                    shortest = D[i];
                     index = j;
                 }
             }
-            T.set(index, true);//Hem visitat node
-            StandardArrayList<Connection> con = soal.get(index).getConnections(); //Nomès cal canviar els valors
-            for (int j = 0; j < con.size(); j++) {
-               /* System.out.println("1:"+D.get(index));
-                System.out.println("2:"+getWeight(con.get(j)));
-                System.out.println("3:"+D.get(arryPos[index][j])+"\n");*/
-                if (D.get(index) + getWeight(con.get(j)) < D.get(arryPos[index][j])) {
-                    D.set(arryPos[index][j], D.get(index) + getWeight(con.get(j)));
-                    C.set(arryPos[index][j], index);
+            T[index] = true;//Hem visitat node
+            for (int j = 0; j < soal.get(index).getConnections().size(); j++) {
+                if (D[index] + getWeight(soal.get(index).getConnections().get(j)) < D[arryPos[index][j]]) {
+                    D[arryPos[index][j]] = D[index] + getWeight(soal.get(index).getConnections().get(j));
+                    DAux[arryPos[index][j]] = DAux[index] + getWeightAux(soal.get(index).getConnections().get(j));
+                    C[arryPos[index][j]] = index;
+
+                }
+            }
+        }
+    }
+
+    private void executeDistance() {
+        int shortest;
+        int index;
+        for (int i = 0; i < D.length - 1; i++) { //Recorrem tots els nodes. -1 perque el primer ja esta explorat
+            shortest = Integer.MAX_VALUE;
+            index = 0;
+            //Aqui podria fer un remove quan l'hagi explorat, pero un aixó es el mateix que copiar tot l'array de nou i demanar memoria, així que no em beneficia de re
+            for (int j = 0; j < T.length; j++) {
+                if (!T[j] && D[j] < shortest) {
+                    shortest = D[i];
+                    index = j;
+                }
+            }
+            T[index] = true;//Hem visitat node
+            for (int j = 0; j < soal.get(index).getConnections().size(); j++) {
+                if (D[index] + soal.get(index).getConnections().get(j).getDistance() < D[arryPos[index][j]]) {
+                    D[arryPos[index][j]] = D[index] + soal.get(index).getConnections().get(j).getDistance();
+                    DAux[arryPos[index][j]] = DAux[index] + soal.get(index).getConnections().get(j).getDuration();
+                    C[arryPos[index][j]] = index;
+
+                }
+            }
+        }
+    }
+
+    private void executeDuration() {
+        int shortest;
+        int index;
+        for (int i = 0; i < D.length - 1; i++) { //Recorrem tots els nodes. -1 perque el primer ja esta explorat
+            shortest = Integer.MAX_VALUE;
+            index = 0;
+            //Aqui podria fer un remove quan l'hagi explorat, pero un aixó es el mateix que copiar tot l'array de nou i demanar memoria, així que no em beneficia de re
+            for (int j = 0; j < T.length; j++) {
+                if (!T[j] && D[j] < shortest) {
+                    shortest = D[i];
+                    index = j;
+                }
+            }
+            T[index] = true;//Hem visitat node
+            for (int j = 0; j < soal.get(index).getConnections().size(); j++) {
+                if (D[index] + soal.get(index).getConnections().get(j).getDuration() < D[arryPos[index][j]]) {
+                    D[arryPos[index][j]] = D[index] + soal.get(index).getConnections().get(j).getDuration();
+                    DAux[arryPos[index][j]] = DAux[index] + soal.get(index).getConnections().get(j).getDistance();
+                    C[arryPos[index][j]] = index;
+
                 }
             }
         }
     }
 
     private void initDijkstra() {
-        T.clear();
-        C.clear();
-        D.clear();
+        T = new boolean[soal.length()];
+        C = new int[soal.length()];
+        D = new int[soal.length()];
+        DAux = new int[soal.length()];
         for (int i = 0; i < soal.length(); i++) {
             if (indexOriginCity != i) {
-                T.add(false);
+                T[i] = false;
             } else {
-                T.add(true);
+                T[i] = true;
             }
-            C.add(indexOriginCity);
-            D.add(Integer.MAX_VALUE);
+            C[i] = indexOriginCity;
+            D[i] = Integer.MAX_VALUE; //DAux no cal
+
         }
         CityInfo ci = soal.get(indexOriginCity);
         for (int i = 0; i < ci.getConnections().size(); i++) {
-            D.set(arryPos[indexOriginCity][i], getWeight(ci.getConnections().get(i)));
+            D[arryPos[indexOriginCity][i]] = getWeight(ci.getConnections().get(i));
+            DAux[arryPos[indexOriginCity][i]] = getWeightAux(ci.getConnections().get(i));
         }
-        D.set(indexOriginCity,0);
+        D[indexOriginCity] = 0;
+        DAux[indexOriginCity] = 0;
     }
 
     private int getWeight(Connection c) {
-        switch (type) {
+        switch (typeValue) {
             case 0: //Distance
                 return c.getDistance();
             case 1: //Time
+                return c.getDuration();
+        }
+        return -1;
+    }
+
+    private int getWeightAux(Connection c) { //Lo mateix que getWeight, pero invertit
+        switch (typeValue) {
+            case 1: //Distance
+                return c.getDistance();
+            case 0: //Time
                 return c.getDuration();
         }
         return -1;

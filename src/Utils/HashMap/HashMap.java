@@ -63,9 +63,8 @@ public class HashMap<K, V>{
         StandardArrayList<HashNode<K,V>> bucketarray = map.get(getIndexAux(key)).getBucketlist();
         //foreach + rapid que standard for. Excepte que no el puc utilitzar perque no implemento ni iterator, ni hasNext, ni next :)
         for(int i = 0; i < bucketarray.size(); i++){
-            HashNode<K,V> hn = bucketarray.get(i);
-            if(hn.getKey().equals(key)){  //String fa override del .equals, vigilar amb altres objectes
-               return hn.getValue();
+            if(bucketarray.get(i).getKey().equals(key)){  //String fa override del .equals, vigilar amb altres objectes
+               return  bucketarray.get(i).getValue();
             }
         }
         return null; //Si no troba la clau. En aquest cas es busca a la API

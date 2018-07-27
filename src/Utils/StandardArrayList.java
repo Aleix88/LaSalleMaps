@@ -33,7 +33,7 @@ public class StandardArrayList<E> implements List<E>{
         return false;
     }
 
-    E data(int index) {
+    private E data(int index) {
         return (E) data[index];
     }
 

@@ -16,7 +16,7 @@ public class DataManager {
     private static DataManager instance = null;
 
     private StringOrderedArrayList<CityInfo> cities;
-    private int[][] arrayPositions;
+    private int[][] arrayPositionsConnections;
     private AVLTree<CityInfo> avl;
     private HashMap<String, CityInfo> hashMap;
 
@@ -43,21 +43,26 @@ public class DataManager {
             avl.insertarNode(new NodeData<CityInfo>(ci.getCity().getName(), ci));
             hashMap.put(ci.getCity().getName(), ci);
         }
-        updateArrayPositions();
     }
 
     public void addCityInfo(CityInfo ci) {
         cities.addOrdered(new ObjectStringOrderedArrayList(ci, ci.getCity().getName()));
         avl.insertarNode(new NodeData<CityInfo>(ci.getCity().getName(), ci));
         hashMap.put(ci.getCity().getName(), ci);
+        updateArrayPositions();
     }
-    private void updateArrayPositions(){
-        arrayPositions=  new int[cities.length()][];
-        for(int i = 0; i < cities.length(); i++){
-            StandardArrayList<Connection> c = cities.get(i).getConnections();
-            arrayPositions[i] = new int[cities.get(i).getConnections().size()];
-            for(int j = 0; j < c.size(); j++){
-                arrayPositions[i][j] = cities.binarySearchIndex(c.get(j).getTo());
+
+    private void updateArrayPositions() {
+        for (int i = 0; i < cities.length(); i++) {
+            cities.get(i).setArryPos(i);
+        }
+        arrayPositionsConnections = new int[cities.length()][];
+        StandardArrayList<Connection> c;
+        for (int i = 0; i < cities.length(); i++) {
+            c = cities.get(i).getConnections();
+            arrayPositionsConnections[i] = new int[cities.get(i).getConnections().size()];
+            for (int j = 0; j < c.size(); j++) {
+                arrayPositionsConnections[i][j] = cities.binarySearch(c.get(j).getTo()).getArryPos();
             }
         }
     }
@@ -66,12 +71,11 @@ public class DataManager {
         for (int i = 0; i < connectionsList.length; i++) {
             CityInfo o = cities.binarySearch(connectionsList[i].getFrom());
             o.getConnections().add(connectionsList[i]);
-            o.getDestCityConnections().add(cities.binarySearch(connectionsList[i].getTo()).getCity());
         }
         updateArrayPositions();
     }
 
-    public CityInfo searchCityInfo(String cityName, int type) {
+    public CityInfo searchCityInfo(String cityName, int type, int search) {
         CityInfo o = null;
         if (cityName.length() != 0) {
             long currentNanos = System.nanoTime();
@@ -90,13 +94,16 @@ public class DataManager {
                     break;
 
             }
-            if (o == null) {
+            if (o == null && search == 1) {
                 System.out.println("No s'ha trobat aquesta ciutat a la base de dades. Es buscarà a la API");
                 System.out.println("Buscant......");
                 APISalleMaps.getInstance().searchCity(cityName);
             }
-            System.out.println(System.lineSeparator() + "S'ha tardat " + (System.nanoTime() - currentNanos)/1000 +
-                    " us en executar el procés de cerca");
+            if (search == 1) {
+                System.out.println(System.lineSeparator() + "S'ha tardat " + (System.nanoTime() - currentNanos) / 1000 +
+                        " us en executar el procés de cerca");
+            }
+
         } else {
             System.out.println("El nom de la ciutat no pot estar buit");
         }
@@ -107,7 +114,7 @@ public class DataManager {
         return cities;
     }
 
-    public int[][] getArrayPositions() {
-        return arrayPositions;
+    public int[][] getArrayPositionsConnections() {
+        return arrayPositionsConnections;
     }
 }

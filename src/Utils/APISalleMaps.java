@@ -68,6 +68,9 @@ public class APISalleMaps {
                 }
             }
         }
+        if(numCities == 0){
+            closeCities.add(DataManager.getInstance().getCities().get(0).getCity());
+        }
 
         double[] latitudes = new double[closeCities.size()];
         double[] longitudes = new double[closeCities.size()];
@@ -85,16 +88,10 @@ public class APISalleMaps {
                         StandardArrayList<Connection> connections = new StandardArrayList<>();
                         DistanceParser.parseDistances(data, ci.getCity().getName(), closeCities/*Ciutats a les quals vols crear connexions*/, indexes, connections);
                         ci.setConnections(connections);
-                        StandardArrayList<City> destCities = new StandardArrayList<>();
-                        for(int i = 0; i < connections.size(); i++){
-                            destCities.add(DataManager.getInstance().getCities().binarySearch(connections.get(i).getTo()).getCity());
-                        }
-                        ci.setDestCityConnections(destCities);
                         for(int i = 0; i < connections.size(); i++){
                             CityInfo ciAux = DataManager.getInstance().getCities().binarySearch(connections.get(i).getTo());
                             ciAux.getConnections().add(new Connection(connections.get(i).getTo(), connections.get(i).getFrom(), connections.get(i).getDistance(),
                                     connections.get(i).getDuration()));
-                            ciAux.getDestCityConnections().add(ci.getCity());
                         }
                         DataManager.getInstance().addCityInfo(ci);
                         Menu.getInstance().printCityInfo(ci);
