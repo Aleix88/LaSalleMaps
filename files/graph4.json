@@ -1,0 +1,45 @@
+{
+  "cities": [
+    {
+      "name": "Cambrils",
+      "address": "Cambrils, Tarragona, Spain",
+      "country": "ES",
+      "latitude": 41.0666754,
+      "longitude": 1.0603606
+    },
+    {
+      "name": "Reus",
+      "address": "Reus, Tarragona, Spain",
+      "country": "ES",
+      "latitude": 41.1498259,
+      "longitude": 1.1055321
+    },
+    {
+      "name": "Tarragona",
+      "address": "Tarragona, Spain",
+      "country": "ES",
+      "latitude": 41.1188827,
+      "longitude": 1.2444909
+    }
+  ],
+  "connections": [
+    {
+      "from": "Cambrils",
+      "to": "Tarragona",
+      "distance": 1,
+      "duration": 100000
+    },
+    {
+      "from": "Cambrils",
+      "to": "Reus",
+      "distance": 10000,
+      "duration": 1
+    },
+    {
+      "from": "Reus",
+      "to": "Tarragona",
+      "distance": 10000,
+      "duration": 1
+    }
+  ]
+}

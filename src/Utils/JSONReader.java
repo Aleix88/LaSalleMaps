@@ -17,7 +17,7 @@ public class JSONReader {
     public String getFilename(){
         String nomFitxer;
         Scanner sc = new Scanner(System.in);
-        System.out.print("Nom fitxer JSON Magatzems(o Path):");
+        System.out.print("Nom fitxer JSON(o Path):");
         nomFitxer = sc.nextLine();
         return nomFitxer;
     }

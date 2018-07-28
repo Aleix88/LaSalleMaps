@@ -94,31 +94,6 @@ public class DijkstraAlgorithm {
         }
     }
 
-    private void execute() {
-        int shortest;
-        int index;
-        for (int i = 0; i < D.length - 1; i++) { //Recorrem tots els nodes. -1 perque el primer ja esta explorat
-            shortest = Integer.MAX_VALUE;
-            index = 0;
-            //Aqui podria fer un remove quan l'hagi explorat, pero un aixó es el mateix que copiar tot l'array de nou i demanar memoria, així que no em beneficia de re
-            for (int j = 0; j < T.length; j++) {
-                if (!T[j] && D[j] < shortest) {
-                    shortest = D[i];
-                    index = j;
-                }
-            }
-            T[index] = true;//Hem visitat node
-            for (int j = 0; j < soal.get(index).getConnections().size(); j++) {
-                if (D[index] + getWeight(soal.get(index).getConnections().get(j)) < D[arryPos[index][j]]) {
-                    D[arryPos[index][j]] = D[index] + getWeight(soal.get(index).getConnections().get(j));
-                    DAux[arryPos[index][j]] = DAux[index] + getWeightAux(soal.get(index).getConnections().get(j));
-                    C[arryPos[index][j]] = index;
-
-                }
-            }
-        }
-    }
-
     private void executeDistance() {
         int shortest;
         int index;
@@ -128,7 +103,7 @@ public class DijkstraAlgorithm {
             //Aqui podria fer un remove quan l'hagi explorat, pero un aixó es el mateix que copiar tot l'array de nou i demanar memoria, així que no em beneficia de re
             for (int j = 0; j < T.length; j++) {
                 if (!T[j] && D[j] < shortest) {
-                    shortest = D[i];
+                    shortest = D[j];
                     index = j;
                 }
             }
@@ -143,7 +118,6 @@ public class DijkstraAlgorithm {
             }
         }
     }
-
     private void executeDuration() {
         int shortest;
         int index;
@@ -153,7 +127,7 @@ public class DijkstraAlgorithm {
             //Aqui podria fer un remove quan l'hagi explorat, pero un aixó es el mateix que copiar tot l'array de nou i demanar memoria, així que no em beneficia de re
             for (int j = 0; j < T.length; j++) {
                 if (!T[j] && D[j] < shortest) {
-                    shortest = D[i];
+                    shortest = D[j];
                     index = j;
                 }
             }
@@ -182,7 +156,6 @@ public class DijkstraAlgorithm {
             }
             C[i] = indexOriginCity;
             D[i] = Integer.MAX_VALUE; //DAux no cal
-
         }
         CityInfo ci = soal.get(indexOriginCity);
         for (int i = 0; i < ci.getConnections().size(); i++) {
